@@ -16,11 +16,11 @@ Chức năng của hệ thống:
 - Phần mềm:
   + Giao diện Web hiển thị theo 2 phân quyền
   + Phân quyền chủ cho thuê:
-    Tạo tài khoản khách thuê bằng mã qr và nhập thủ công
-    Giám sát tổng số xe cho thuê
-    Giám sát riêng biệt thông tin từng xe
+    Tạo tài khoản khách thuê bằng mã qr và nhập thủ công,
+    Giám sát tổng số xe cho thuê,
+    Giám sát riêng biệt thông tin từng xe,
     Nhận cảnh báo chống trộm bằng cuộc gọi và sms khi xe bị tác động
   + Phân quyền khách thuê:
-    Giám sát được xe đang thuê
-    Lưu trữ hành trình di chuyển
+    Giám sát được xe đang thuê,
+    Lưu trữ hành trình di chuyển,
     Nhận cảnh báo bằng còi khi xe bị tác động
