@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMART MOTO | Renter Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --neon-blue: #00d2ff;
+        }
+
+        body { 
+            background: radial-gradient(circle at top right, #1e2a47, #0f172a);
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #map { 
+            flex: 1; 
+            width: 100%; 
+            border-bottom: 3px solid var(--neon-blue);
+        }
+
+        .dashboard-overlay {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            padding: 20px;
+            border-top: 1px solid var(--glass-border);
+            box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+        }
+
+        .car-info-mini {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .profile-img-small {
+            width: 60px; height: 60px;
+            border-radius: 15px;
+            object-fit: cover;
+            border: 2px solid var(--neon-blue);
+        }
+
+        .plate-number-mini { 
+            font-weight: 800; 
+            color: #fff; 
+            background: linear-gradient(45deg, #3a7bd5, #00d2ff);
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .btn-history {
+            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+            border: none;
+            color: white;
+            font-weight: bold;
+            border-radius: 12px;
+            padding: 12px 20px;
+            transition: 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-history:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
+            color: white;
+        }
+
+        .blink { animation: blinker 1.5s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
+
+        .google-dot-container {
+            position: relative;
+            width: 36px;  
+            height: 36px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .google-dot {
+            width: 20px;  
+            height: 20px; 
+            background: #4285F4; 
+            border: 3px solid white; 
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            z-index: 5;
+        }
+
+        .google-pulse {
+            position: absolute;
+            width: 54px;  
+            height: 54px; 
+            background: rgba(66, 133, 244, 0.25);
+            border-radius: 50%;
+            animation: pulse-out 2s infinite ease-out;
+            z-index: 1;
+        }
+
+        @keyframes pulse-out {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="map"></div>
+
+    <div class="dashboard-overlay">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6 col-12 mb-3 mb-md-0">
+                    <div class="car-info-mini">
+                        <img src="{{ url_for('static', filename='uploads/' + user.profile_img) }}" class="profile-img-small shadow">
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="plate-number-mini">{{ user.license_plate }}</span>
+                                <small id="status-badge" class="blink fw-bold">● KẾT NỐI...</small>
+                            </div>
+                            <h5 class="mb-0 fw-bold">{{ user.name }}</h5>
+                            <small class="fw-bold" id="speed-live-text" style="color: #00d2ff;">
+                                <i class="fas fa-gauge-high me-1"></i> Vận tốc: -- km/h
+                            </small>
+                            <small class="fw-bold d-block" id="district-live-text" style="color: #22c55e;">
+                                <i class="fas fa-map-marker-alt me-1"></i> Đang xác định vị trí...
+                            </small>
+                            <small class="fw-bold d-none" id="theft-alert-text" style="color: #ff4757;">
+                                <i class="fas fa-triangle-exclamation me-1"></i> CẢNH BÁO: Xe đang bị tác động!
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-12">
+                    <div class="d-flex gap-2 justify-content-md-end">
+                        <a href="{{ url_for('history') }}" class="btn-history shadow w-100 w-md-auto">
+                            <i class="fas fa-history me-2"></i> XEM HÀNH TRÌNH DI CHUYỂN
+                        </a>
+                        
+                        <a href="/logout" class="btn btn-outline-danger rounded-pill px-3 d-flex align-items-center">
+                            <i class="fas fa-power-off"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.marker.slideto@0.2.0/Leaflet.Marker.SlideTo.js"></script>
+
+    <script>
+        var map;
+        var currentMarker;
+        var firstLoad = true; // Biến kiểm soát chỉ ép góc camera tập trung vào xe ở lần đầu tiên mở app
+
+        function initMap() {
+            // Lấy tọa độ khởi tạo ban đầu từ DB do Flask đổ ra
+            const startLoc = [parseFloat("{{ user.lat }}"), parseFloat("{{ user.lng }}")];
+            
+            map = L.map('map', { zoomControl: false }).setView(startLoc, 16);
+            
+            L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+                maxZoom: 20,
+                subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+                attribution: '© Google Maps'
+            }).addTo(map);
+
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+            // Chạy kích hoạt quét dữ liệu lập tức
+            updateRealtimeLocation();
+            
+            // Thiết lập chu kỳ tự động quét ngầm mỗi 2 giây một lần để lấy vị trí mới từ ESP32 mà KHÔNG CẦN F5
+            setInterval(updateRealtimeLocation, 2000);
+        }
+
+        function updateRealtimeLocation() {
+            // Thêm timestamp ngăn chặn triệt để hiện tượng trình duyệt lưu cache API cũ
+            fetch(`/api/get_location/{{ user.id }}?t=` + new Date().getTime(), {
+                method: 'GET',
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("Lỗi kết nối mạng");
+                return res.json();
+            })
+            .then(data => {
+                
+                const badge = document.getElementById('status-badge');
+if (badge) {
+    if (data.is_online) {
+        badge.innerHTML = "● GPS ONL";
+        badge.style.color = '#00d2ff';
+        badge.classList.remove('blink');
+    } else {
+        badge.innerHTML = "● GPS OFF";
+        badge.style.color = '#ff4757';
+        badge.classList.add('blink');
+    }
+}
+
+                const lat = parseFloat(data.lat);
+                const lng = parseFloat(data.lng);
+
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    const latLng = [lat, lng];
+                    
+                
+                    if (currentMarker) {
+                        
+                        currentMarker.slideTo(latLng, { duration: 1200 });
+                    } else {
+                        
+                        const googleIcon = L.divIcon({
+                            className: '', 
+                            html: `
+                                <div class="google-dot-container">
+                                    <div class="google-dot"></div>
+                                    <div class="google-pulse"></div>
+                                </div>`,
+                            iconSize: [36, 36],
+                            iconAnchor: [18, 18]
+                        });
+                        currentMarker = L.marker(latLng, { icon: googleIcon }).addTo(map);
+                    }
+
+                    
+                    if (firstLoad) {
+                        map.setView(latLng, 16);
+                        firstLoad = false;
+                    } else {
+                        // Nếu xe đi lệch ra khỏi khung hình hiển thị hiện tại của điện thoại, tự cuộn map theo xe mượt mà
+                        if (!map.getBounds().contains(latLng)) {
+                            map.panTo(latLng);
+                        }
+                    }
+
+                    // 3. Cập nhật vận tốc
+                    const speedText = document.getElementById('speed-live-text');
+                    if (speedText) {
+                        const spd = parseFloat(data.speed) || 0;
+                        speedText.innerHTML = `<i class="fas fa-gauge-high me-1"></i> Vận tốc: ${spd.toFixed(1)} km/h`;
+                        speedText.style.color = spd > 0 ? '#00d2ff' : '#94a3b8';
+                    }
+
+                    // 4. Cảnh báo trộm
+                    const theftText = document.getElementById('theft-alert-text');
+                    if (theftText) {
+                        if (data.theft_alert) {
+                            theftText.classList.remove('d-none');
+                        } else {
+                            theftText.classList.add('d-none');
+                        }
+                    }
+
+                    // 5. Cập nhật Text Quận Huyện thời gian thực lên giao diện
+                    const districtText = document.getElementById('district-live-text');
+                    if (districtText) {
+                        if (data.district) {
+                            districtText.innerHTML = `<i class="fas fa-map-marker-alt me-1"></i> Vị trí: ${data.district} (TP.HCM)`;
+                            districtText.style.color = '#22c55e';
+                        } else {
+                            districtText.innerHTML = `<i class="fas fa-exclamation-circle me-1"></i> Ngoài vùng quản lý TP.HCM!`;
+                            districtText.style.color = '#ff4757';
+                        }
+                    }
+                }
+            })
+            .catch(err => {
+                console.error("Lỗi cập nhật thời gian thực người thuê:", err);
+                const badge = document.getElementById('status-badge');
+                if (badge) {
+                    badge.innerHTML = "● GPS OFFLINE";
+                    badge.style.color = '#ff4757';
+                }
+            });
+        }
+
+        
+        window.onload = initMap;
+    </script>
+</body>
+</html>

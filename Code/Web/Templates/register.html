@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration | Smart Moto System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --neon-blue: #00d2ff;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body { 
+            background: radial-gradient(circle at center, #1e2a47, #0f172a);
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding: 40px 0;
+        }
+
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 35px;
+            padding: 40px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+        }
+
+        .section-title {
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(to right, #fff, var(--neon-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+        }
+
+        /* Vùng tải QR kiểu High-tech */
+        .upload-qr-zone { 
+            border: 2px dashed var(--neon-blue); 
+            border-radius: 20px; 
+            padding: 30px; 
+            text-align: center; 
+            cursor: pointer; 
+            transition: 0.3s;
+            background: rgba(0, 210, 255, 0.03);
+        }
+        .upload-qr-zone:hover { 
+            background: rgba(0, 210, 255, 0.1); 
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.2);
+        }
+
+        .form-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--neon-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            color: white;
+            padding: 12px 18px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
+            color: white;
+        }
+
+        .preview-img { 
+            width: 140px; 
+            height: 140px; 
+            object-fit: cover; 
+            border-radius: 25px; 
+            margin-top: 20px; 
+            display: none; 
+            border: 3px solid var(--neon-blue);
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
+        }
+
+        .btn-submit {
+            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+            border: none;
+            border-radius: 20px;
+            padding: 15px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 210, 255, 0.4);
+            filter: brightness(1.1);
+        }
+
+        .btn-back {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+        .btn-back:hover { color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-7 col-md-10">
+            <div class="mb-4 d-flex justify-content-between align-items-center">
+                <a href="/" class="btn-back"><i class="fas fa-arrow-left me-2"></i> Back to Dashboard</a>
+                <span class="badge rounded-pill bg-dark border border-secondary p-2 px-3">STEP 1: IDENTITY VERIFICATION</span>
+            </div>
+
+            <div class="glass-card">
+                <h2 class="section-title text-center">New Rental Profile</h2>
+                
+                <div class="upload-qr-zone mb-4" onclick="document.getElementById('qrInput').click()">
+                    <i class="fas fa-qrcode fa-3x mb-3" style="color: var(--neon-blue);"></i>
+                    <h5 class="fw-bold">Upload VNeID QR Code</h5>
+                    <p class="text-white-50 small mb-0">Automatic data parsing for faster registration</p>
+                    <input type="file" id="qrInput" class="d-none" accept="image/*" onchange="handleQR(this)">
+                </div>
+
+                <form action="/add_user" method="POST" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Vehicle License Plate</label>
+                            <input type="text" name="license_plate" class="form-control" placeholder="e.g. 49-A1 12345" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Client Phone Number</label>
+                            <input type="text" name="phone" class="form-control" placeholder="090XXXXXXXX" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" id="name" name="name" class="form-control" placeholder="Auto-filled via QR" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 mb-4">
+                            <label class="form-label">Identity Number (CCCD)</label>
+                            <input type="text" id="cccd" name="cccd" class="form-control" placeholder="Auto-filled via QR" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Step 2: Take Client Portrait</label>
+                        <div class="d-flex align-items-center gap-3">
+                            <input type="file" name="profile_img" class="form-control" accept="image/*" onchange="previewImg(this)" required>
+                        </div>
+                        <div class="text-center">
+                            <img id="preview" class="preview-img">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-submit w-100">
+                        <i class="fas fa-check-circle me-2"></i> Confirm Registration
+                    </button>
+                </form>
+            </div>
+            
+            <p class="text-center mt-4 text-white-50 small">
+                Authorized Access Only • System Security Active <i class="fas fa-shield-alt ms-1"></i>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    
+    // Xử lý nén ảnh và đọc mã QR
+    function handleQR(input) {
+        if (!input.files[0]) return;
+        
+        const zoneText = document.querySelector('.upload-qr-zone h5');
+        zoneText.innerText = "Processing & Compressing..."; 
+
+        const file = input.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                // Bước 1: Tạo Canvas để nén ảnh
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 1200; // Kích thước chuẩn để quét QR ổn định nhất
+                let width = img.width;
+                let height = img.height;
+
+                if (width > MAX_WIDTH) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Bước 2: Nén ảnh về định dạng JPEG (Chất lượng 0.7)
+                canvas.toBlob((blob) => {
+                    let formData = new FormData();
+                    formData.append('file', blob, "qr_scan.jpg");
+
+                    // Bước 3: Gửi dữ liệu đã nén lên Server
+                    fetch('/api/upload_qr', { method: 'POST', body: formData })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.name) {
+                                document.getElementById('name').value = data.name;
+                                document.getElementById('cccd').value = data.cccd;
+                                zoneText.innerText = "QR Data Verified ✅";
+                            } else {
+                                alert("QR Code not recognized! Please try a clearer photo.");
+                                zoneText.innerText = "Upload VNeID QR Code";
+                            }
+                        })
+                        .catch(err => {
+                            console.error("Error:", err);
+                            zoneText.innerText = "Network Error!";
+                        });
+                }, 'image/jpeg', 0.9);
+            }
+            img.src = e.target.result;
+        }
+        reader.readAsDataURL(file);
+    }
+
+    // Xem trước ảnh chân dung khách hàng
+    function previewImg(input) {
+        const preview = document.getElementById('preview');
+        if (input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => { 
+                preview.src = e.target.result;
+                preview.style.display = 'inline-block';
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+</script>
+</body>
+</html>

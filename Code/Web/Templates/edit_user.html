@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - SMART MOTO</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --neon-blue: #00d2ff;
+        }
+
+        body { 
+            background: radial-gradient(circle at top right, #1e2a47, #0f172a);
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        .edit-container {
+            max-width: 600px;
+            margin: 40px auto;
+        }
+
+        .edit-card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .edit-card h2 {
+            color: var(--neon-blue);
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .form-label {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--glass-border);
+            color: #f8fafc;
+            border-radius: 15px;
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--neon-blue);
+            color: #f8fafc;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.2);
+        }
+
+        .form-control::placeholder {
+            color: #64748b;
+        }
+
+        .current-photo {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .current-photo img {
+            width: 120px;
+            height: 120px;
+            border-radius: 20px;
+            border: 3px solid var(--neon-blue);
+            object-fit: cover;
+            box-shadow: 0 8px 20px rgba(0, 210, 255, 0.3);
+        }
+
+        .btn-save {
+            background: linear-gradient(45deg, #3a7bd5, #00d2ff);
+            border: none;
+            color: #000;
+            font-weight: 700;
+            border-radius: 18px;
+            padding: 14px;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 210, 255, 0.4);
+        }
+
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: #94a3b8;
+            border-radius: 18px;
+            padding: 14px;
+            margin-top: 10px;
+            transition: 0.3s;
+            text-decoration: none;
+            display: block;
+        }
+
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+        }
+
+        .back-link {
+            color: var(--neon-blue);
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container edit-container">
+    <a href="/" class="back-link"><i class="fas fa-arrow-left me-2"></i> Quay lại Dashboard</a>
+
+    <div class="edit-card">
+        <h2><i class="fas fa-edit me-2"></i> Chỉnh sửa thông tin: {{ user.name }}</h2>
+        
+        <form action="/edit_user/{{ user.id }}" method="POST" enctype="multipart/form-data">
+            <!-- Tên khách -->
+            <div class="mb-4">
+                <label class="form-label">Tên khách hàng</label>
+                <input type="text" name="name" class="form-control" value="{{ user.name }}" required>
+            </div>
+
+            <!-- CCCD -->
+            <div class="mb-4">
+                <label class="form-label">Số CCCD</label>
+                <input type="text" name="cccd" class="form-control" value="{{ user.cccd }}" required>
+            </div>
+
+            <!-- Điện thoại -->
+            <div class="mb-4">
+                <label class="form-label">Số điện thoại</label>
+                <input type="text" name="phone" class="form-control" value="{{ user.phone }}" required>
+            </div>
+
+            <!-- Biển số -->
+            <div class="mb-4">
+                <label class="form-label">Biển số xe</label>
+                <input type="text" name="license_plate" class="form-control" value="{{ user.license_plate }}" required>
+            </div>
+            
+            <!-- Ảnh đại diện -->
+            <div class="mb-4">
+                <label class="form-label">Ảnh hiện tại</label>
+                <div class="current-photo">
+                    <img src="{{ url_for('static', filename=('uploads/' ~ (user.profile_img or 'default.png'))) }}" alt="Profile">
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Tải ảnh mới (tùy chọn)</label>
+                <input type="file" name="profile_img" class="form-control" accept="image/*">
+            </div>
+
+            <!-- Buttons -->
+            <button type="submit" class="btn btn-save w-100">
+                <i class="fas fa-save me-2"></i> Lưu thay đổi
+            </button>
+            <a href="/" class="btn-cancel">
+                <i class="fas fa-times me-2"></i> Hủy
+            </a>
+        </form>
+        <div class="divider"></div>
+        
+        <form action="/delete_user/{{ user.id }}" method="POST" 
+              onsubmit="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn xóa khách hàng này không? Dữ liệu sẽ mất vĩnh viễn!');">
+            <button type="submit" class="btn btn-delete">
+                <i class="fas fa-trash-alt me-2"></i> Xóa vĩnh viễn thông tin này
+            </button>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

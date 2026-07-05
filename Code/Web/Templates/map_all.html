@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMART MOTO | All Vehicles Live Map</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    
+    <style>
+        body { 
+            background: radial-gradient(circle at top right, #1e2a47, #0f172a);
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        .dashboard-header {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+        }
+        #map { 
+            height: 75vh; 
+            width: 100%; 
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="dashboard-header d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="fw-bold mb-0">
+                <span style="color: #00d2ff;">📍</span> ALL VEHICLES LIVE MAP
+            </h1>
+            <p class="text-info mb-0" id="total-vehicles-count">{{ users|length }} xe đang được theo dõi</p>
+        </div>
+        <a href="{{ url_for('index') }}" class="btn btn-outline-light rounded-pill px-4">
+            <i class="fas fa-arrow-left me-2"></i> Quay về Dashboard
+        </a>
+    </div>
+
+    <div id="map"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+<script>
+    console.log("=== MAP ALL REAL-TIME TPHCM START ===");
+
+    
+    const map = L.map('map', { worldCopyJump: true }).setView([10.7769, 106.7009], 12);
+
+    
+    L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+        attribution: '© Google Maps'
+    }).addTo(map);
+
+    
+    const markerClusterGroup = L.markerClusterGroup({
+        showCoverageOnHover: false,
+        maxClusterRadius: 50
+    });
+    map.addLayer(markerClusterGroup);
+
+    
+    let vehicleMarkers = {}; 
+    let firstLoad = true;
+
+    // --- HÀM ĐỒNG BỘ DATA REAL-TIME TỪ SERVER FLASK ---
+    function updateAllVehiclesLive() {
+        
+        fetch('/api/get_all_locations?t=' + new Date().getTime())
+            .then(res => res.json())
+            .then(users => {
+                document.getElementById('total-vehicles-count').innerText = `${users.length} xe đang được theo dõi`;
+                let bounds = L.latLngBounds([]);
+
+                users.forEach(user => {
+                    const lat = parseFloat(user.lat);
+                    const lng = parseFloat(user.lng);
+                    let speed = parseFloat(user.speed) || 0;
+
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        if (Math.abs(speed) < 0.5) {
+                            speed = 0;
+                        }
+                        
+                        // Xử lý hiển thị thông tin quận dựa trên dữ liệu Backend đã quét bằng thuật toán Ray-Casting
+                        let districtLineHTML = '';
+                        if (user.district) {
+                            districtLineHTML = `<div style="margin-top: 4px; font-weight: bold; color: #22c55e;">📍 Vị trí: ${user.district} (TP.HCM)</div>`;
+                        } else {
+                            districtLineHTML = `<div style="margin-top: 4px; font-weight: bold; color: #ff4757;">⚠️ Ngoài vùng quản lý!</div>`;
+                        }
+                        const theftAlertHTML = user.theft_alert ? `<div style="margin-top: 6px; font-weight: 700; color: #b91c1c;">🚨 Cảnh báo trộm đang kích hoạt</div>` : '';
+
+                        
+                        const popupHTML = `
+                            <div style="text-align:center; min-width:240px; color:#333; font-family:sans-serif;">
+                                <img src="/static/uploads/${user.profile_img}" style="width:65px; height:65px; border-radius:50%; border:2px solid #00d2ff; margin-bottom:8px; object-fit:cover;"><br>
+                                <div style="font-size:1.2rem; font-weight:bold; color:#1e3a8a;">${user.license_plate}</div>
+                                <div style="margin:4px 0; font-weight:600; color:#4b5563;">${user.name}</div>
+                                <div class="small" style="text-align:left; background:#f3f4f6; padding:8px; border-radius:10px; line-height: 1.5;">
+                                    🏎️ Vận tốc: ${speed.toFixed(1)} km/h<br>
+                                    📱 SĐT: ${user.phone}<br>
+                                    🪪 CCCD: ${user.cccd}
+                                    ${districtLineHTML}
+                                    ${theftAlertHTML}
+                                </div>
+                                <hr style="margin:10px 0 8px 0; border-top: 1px solid #e5e7eb;">
+                                <a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" class="btn btn-sm btn-primary w-100 text-whitefw-bold" style="border-radius:8px;">
+                                    <i class="fas fa-external-link-alt me-1"></i> Xem trên Google Maps
+                                </a>
+                            </div>
+                        `;
+
+                        const markerHtml = user.theft_alert ?
+                            `<div style="width: 24px; height: 24px; border-radius: 50%; background: #ef4444; border: 3px solid #fff; box-shadow: 0 0 12px rgba(239,68,68,0.6);"></div>` :
+                            `<div style="width: 24px; height: 24px; border-radius: 50%; background: #22c55e; border: 3px solid #fff; box-shadow: 0 0 12px rgba(34,197,94,0.45);"></div>`;
+                        const customIcon = L.divIcon({ className: '', html: markerHtml, iconSize: [24, 24], iconAnchor: [12, 12] });
+
+                        if (vehicleMarkers[user.id]) {
+                            // Nếu xe đã có trên bản đồ -> Chỉ dịch chuyển trơn tru đến tọa độ mới và cập nhật Popup
+                            vehicleMarkers[user.id].setLatLng([lat, lng]);
+                            vehicleMarkers[user.id].setPopupContent(popupHTML);
+                            vehicleMarkers[user.id].setIcon(customIcon);
+                        } else {
+                            // Nếu là xe mới xuất hiện -> Khởi tạo marker mới tinh và add vào Cluster
+                            const marker = L.marker([lat, lng], { icon: customIcon });
+                            marker.bindPopup(popupHTML);
+                            markerClusterGroup.addLayer(marker);
+                            vehicleMarkers[user.id] = marker; // Lưu lại vào danh sách quản lý
+                        }
+
+                        bounds.extend([lat, lng]);
+                    }
+                });
+
+                
+                if (firstLoad && bounds.isValid() && users.length > 0) {
+                    map.fitBounds(bounds, { padding: [80, 80] });
+                    firstLoad = false;
+                }
+            })
+            .catch(err => console.error("Lỗi cập nhật Live Map TPHCM:", err));
+    }
+
+    
+    window.onload = function() {
+        updateAllVehiclesLive();
+        
+        setInterval(updateAllVehiclesLive, 1000);
+    };
+</script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Management System | Secure Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #00d2ff;
+            --secondary-color: #3a7bd5;
+        }
+
+        body {
+            background: url('https://images.unsplash.com/photo-1558981403-c5f9899a28bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+
+        
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1;
+        }
+
+        .login-container {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            padding: 40px;
+            color: white;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .brand-logo {
+            font-size: 3rem;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            color: white;
+            padding: 12px 20px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
+            color: white;
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-login {
+            background: linear-gradient(to right, #00d2ff, #3a7bd5);
+            border: none;
+            border-radius: 15px;
+            padding: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(58, 123, 213, 0.4);
+            filter: brightness(1.1);
+        }
+
+        .footer-text {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .input-group-text {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-right: none;
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 15px 0 0 15px;
+        }
+
+        .form-control-with-icon {
+            border-left: none;
+            border-radius: 0 15px 15px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <div class="glass-card text-center">
+        <div class="brand-logo">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+        <h2 class="fw-bold mb-1">Welcome Back</h2>
+        <p class="text-white-50 mb-4">Motorbike Rental Admin System</p>
+
+        <form method="POST">
+            <div class="mb-3 text-start">
+                <label class="form-label text-white">Login as:</label>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="role" id="admin" value="admin" checked>
+                    <label class="form-check-label text-white" for="admin">Admin</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="role" id="renter" value="renter">
+                    <label class="form-check-label text-white" for="renter">Renter</label>
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                    <input type="text" name="username" class="form-control form-control-with-icon" placeholder="Username" required>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                    <input type="password" name="password" class="form-control form-control-with-icon" placeholder="Password" required>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="remember">
+                    <label class="form-check-label small" for="remember">Remember me</label>
+                </div>
+                <a href="#" class="text-white-50 small text-decoration-none">Forgot Password?</a>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-login w-100">
+                Sign In <i class="fas fa-arrow-right ms-2"></i>
+            </button>
+        </form>
+
+        <div class="footer-text">
+            &copy; 2026 SMART MOTOR SYSTEM. <br>
+            Authorized Personnel Only.
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('input[name="role"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const usernameInput = document.querySelector('input[name="username"]');
+        const passwordInput = document.querySelector('input[name="password"]');
+        if (this.value === 'admin') {
+            usernameInput.placeholder = 'Username';
+            passwordInput.placeholder = 'Password';
+        } else {
+            usernameInput.placeholder = 'Name';
+            passwordInput.placeholder = 'CCCD';
+        }
+    });
+});
+
+document.querySelector('input[name="role"]:checked').dispatchEvent(new Event('change'));
+</script>
+
+</body>
+</html>
